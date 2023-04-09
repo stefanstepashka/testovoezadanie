@@ -69,7 +69,7 @@ async def start_command_handler(message: types.Message):
         keyboard.add(
             InlineKeyboardButton("Каталог", callback_data="catalog"),
             InlineKeyboardButton("Корзина", callback_data="cart"),
-            InlineKeyboardButton("FAQ", switch_inline_query_current_chat="faq ")
+            InlineKeyboardButton("FAQ", switch_inline_query_current_chat="")
         )
         await message.answer("Добро пожаловать! Выберите действие:", reply_markup=keyboard)
     else:
