@@ -43,7 +43,7 @@ async def show_cart(query: types.CallbackQuery):
         remove_button = InlineKeyboardButton(f"Удалить {cart_item.product.name}", callback_data=remove_item_cd.new(cart_item_id=cart_item.id))
         keyboard.row(remove_button)
 
-    # Добавьте кнопку "Оформить заказ" в клавиатуру
+
     checkout_button = InlineKeyboardButton("Оформить заказ", callback_data=checkout_cd.new(user_id=user_id))
     keyboard.row(checkout_button)
 
@@ -57,13 +57,12 @@ async def show_cart_handler(query: types.CallbackQuery):
 async def remove_item(query: types.CallbackQuery, callback_data: dict):
     cart_item_id = int(callback_data["cart_item_id"])
 
-    # Remove the item from the cart
+
     await remove_item_from_cart(cart_item_id)
 
-    # Send a confirmation message to the user
+
     await query.answer(f"Item {cart_item_id} removed from your cart!")
 
-    # Refresh the cart view
     await show_cart(query)
 
 
@@ -73,15 +72,14 @@ async def remove_item(query: types.CallbackQuery, callback_data: dict):
 
 @database_sync_to_async
 def create_order(user_id):
-    # Здесь вы должны создать заказ в вашем Django приложении, используя данные корзины пользователя
-    # Сохраните заказ в базе данных и возвратите его ID и общую стоимость
+
     cart = Cart.objects.get(user_id=user_id)
     cart_items = CartItem.objects.filter(cart=cart)
 
-    # Вычислите общую стоимость заказа
+
     total_amount = sum(item.product.price * item.quantity for item in cart_items)
 
-    # Создайте заказ с помощью модели Order
+
     order = Order(user_id=user_id, cart=cart, total_amount=total_amount, status="pending")
     order.save()
 

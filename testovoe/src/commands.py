@@ -69,7 +69,7 @@ async def start_command_handler(message: types.Message):
         keyboard.add(
             InlineKeyboardButton("Каталог", callback_data="catalog"),
             InlineKeyboardButton("Корзина", callback_data="cart"),
-            InlineKeyboardButton("FAQ", callback_data="faq")
+            InlineKeyboardButton("FAQ", switch_inline_query_current_chat="faq ")
         )
         await message.answer("Добро пожаловать! Выберите действие:", reply_markup=keyboard)
     else:
@@ -87,8 +87,8 @@ async def show_subcategories(query: types.CallbackQuery, callback_data: dict):
         return
 
     keyboard = InlineKeyboardMarkup(row_width=2)
-    print("In show_subcategories")  # Add this line
-    print(callback_data)  # Add this line
+    print("In show_subcategories")
+    print(callback_data)
     for subcategory in subcategories:
         keyboard.add(InlineKeyboardButton(subcategory["name"],
                                           callback_data=subcategory_cd.new(subcategory_id=subcategory["id"],
@@ -112,7 +112,6 @@ async def get_prev_and_next_product_ids(subcategory_id, current_product_id):
     return prev_id, next_id
 
 
-#@dp.callback_query_handler(subcategory_cd.filter(action="show_products"))
 @dp.callback_query_handler(subcategory_cd.filter(action="show_products"))
 async def show_products(query: types.CallbackQuery, callback_data: dict):
     subcategory_id = int(callback_data["subcategory_id"])
@@ -140,7 +139,7 @@ async def show_products(query: types.CallbackQuery, callback_data: dict):
                                                                                page=page))
         keyboard.row(add_to_cart_button)
 
-    # Create inline keyboard for navigation
+
     nav_keyboard = InlineKeyboardMarkup()
     if page > 1:
         nav_keyboard.add(InlineKeyboardButton("Previous", callback_data=product_cd.new(subcategory_id=subcategory_id,
@@ -198,7 +197,7 @@ async def prev_page_callback_handler(query: types.CallbackQuery, state: FSMConte
     current_page -= 1
     await state.update_data(current_page=current_page)
 
-    # Загрузить новую страницу категорий и обновить сообщение с категориями
+
     categories_data = await get_categories(page=current_page)
     categories = categories_data["results"]
 
@@ -219,32 +218,30 @@ async def prev_page_callback_handler(query: types.CallbackQuery, state: FSMConte
 
 @dp.callback_query_handler(text="next_page")
 async def next_page_callback_handler(query: types.CallbackQuery, state: FSMContext):
-    # Получить текущую страницу из контекста пользователя
+
     user_data = await state.get_data()
     current_page = user_data.get("current_page", 1)
 
-    # Увеличить текущую страницу на 1
+
     new_page = current_page + 1
     await state.update_data(current_page=new_page)
 
-    # Получить категории для новой страницы
+
     categories_data = await get_categories(page=new_page)
     categories = categories_data["results"]
 
-    # Создать клавиатуру с новыми категориями
     keyboard = InlineKeyboardMarkup()
 
     for category in categories:
         keyboard.add(InlineKeyboardButton(category["name"],
         callback_data=category_cd.new(category_id=category["id"], action="show")))
 
-    # кнопки пагинации
+
     if categories_data["previous"]:
         keyboard.add(InlineKeyboardButton("⬅️ Назад", callback_data="prev_page"))
     if categories_data["next"]:
         keyboard.add(InlineKeyboardButton("Вперед ➡️", callback_data="next_page"))
 
-    # Отправить сообщение с новыми категориями
     await query.message.answer("Выберите категорию:", reply_markup=keyboard)
 
 from channels.db import database_sync_to_async
@@ -274,16 +271,14 @@ async def add_to_cart(query: types.CallbackQuery, callback_data: dict):
     subcategory_id = int(callback_data["subcategory_id"])
     page = int(callback_data.get("page", 1))
 
-    # Get or create the cart for the user
     cart = await get_or_create_cart(query.from_user.id)
 
-    # Add the product to the cart
     await add_product_to_cart(cart, product_id)
 
-    # Send a confirmation message to the user
+
     await query.answer(f"Product {product_id} added to your cart!")
 
-    # Show the products in the current subcategory and page
+
     await show_products(query, {
         "subcategory_id": subcategory_id,
         "action": "show_products",

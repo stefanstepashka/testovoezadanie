@@ -60,16 +60,15 @@ async def process_successful_payment(message: types.Message):
     successful_payment = message.successful_payment
     order_id = successful_payment.invoice_payload
 
-    # Update the order status in your Django application to "completed"
+
     await update_order_status(order_id, "completed")
 
-    # Get order information from the database
     order = await get_order_by_id(order_id)
     name = order.name
     phone = order.phone
     total_amount = order.total_amount
 
-    # Save order information to the Excel file
+
     save_order_to_excel(order_id, name, phone, total_amount)
 
     await message.answer("Payment successful!")
@@ -91,16 +90,15 @@ async def checkout(query: types.CallbackQuery, callback_data: dict):
 
 @database_sync_to_async
 def create_order(user_id, name, phone):
-    # Здесь вы должны создать заказ в вашем Django приложении, используя данные корзины пользователя
-    # Сохраните заказ в базе данных и возвратите его ID и общую стоимость
+
     cart = Cart.objects.get(user_id=user_id)
     cart_items = CartItem.objects.filter(cart=cart)
 
-    # Вычислите общую стоимость заказа
+
     total_amount = sum(item.product.price * item.quantity for item in cart_items)
     order_id = str(uuid.uuid4())  # Generate a unique order_id using UUID
     order = Order(user_id=user_id, cart=cart, total_amount=total_amount, order_id=order_id, status="pending",name=name, phone=phone)
-    # Создайте заказ с помощью модели Order
+
     order.save()
 
     return order.order_id, total_amount
@@ -126,18 +124,14 @@ async def process_phone(message: types.Message, state: FSMContext):
 
     user_id = message.from_user.id
 
-    # Создаем заказ с полученными данными
+
     order_id, amount = await create_order(user_id, name, phone)
 
-    # Сохраняем информацию о заказе в Excel-таблицу
 
-    # Отправляем счет пользователю
     await send_invoice(chat_id=user_id, order_id=order_id, amount=amount)
 
-    # Отправляем сообщение пользователю
     await message.answer("Заказ создан. Ожидаем оплату.")
 
-    # Завершаем состояние
     await state.finish()
 #EXCEL
 
