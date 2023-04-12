@@ -13,7 +13,9 @@ import django
 django.setup()
 checkout_cd = CallbackData("checkout", "user_id")
 from channels.db import database_sync_to_async
-
+from aiogram.dispatcher import FSMContext
+from states import QuantityState
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from testovoeapi.models import Cart, CartItem, Order
 
 @database_sync_to_async
@@ -86,3 +88,47 @@ def create_order(user_id):
     return order.order_id, total_amount
 
 
+
+@database_sync_to_async
+def get_or_create_cart(user_id):
+    cart, _ = Cart.objects.get_or_create(user_id=user_id)
+    return cart
+
+@database_sync_to_async
+def add_product_to_cart_sync(cart, product_id, quantity=1):
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product_id=product_id)
+    if not created:
+        cart_item.quantity += quantity
+    else:
+        cart_item.quantity = quantity
+
+    cart_item.save()
+
+
+async def add_product_to_cart(cart, product_id, quantity=1):
+    await add_product_to_cart_sync(cart, product_id, quantity)
+
+
+
+
+
+from cart import show_cart
+@dp.message_handler(lambda message: message.text.isdigit(), state=QuantityState.waiting_for_quantity)
+async def process_quantity(message: types.Message, state: FSMContext):
+    quantity = int(message.text)
+
+    async with state.proxy() as data:
+        product_id = data['product_id']
+        subcategory_id = data['subcategory_id']
+        page = data['page']
+
+        cart = await get_or_create_cart(message.from_user.id)
+        await add_product_to_cart(cart, product_id, quantity)
+
+        await message.answer(f"Product {product_id} added to your cart with quantity {quantity}!")
+
+        fake_query = types.CallbackQuery(id="0", from_user=message.from_user, chat_instance="0", message=message)
+        fake_query.from_user = message.from_user  # Set the from_user attribute explicitly
+
+        await show_cart(fake_query)
+    await state.finish()

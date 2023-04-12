@@ -32,11 +32,12 @@ class SubcategoryList(ListCreateAPIView):
         if category_id is not None:
             queryset = queryset.filter(category_id=category_id)
         return queryset
-
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
 class ProductList(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
+    pagination_class = CustomPageNumberPagination
     def get_queryset(self):
         queryset = Product.objects.all()
         subcategory_id = self.request.query_params.get('subcategory', None)

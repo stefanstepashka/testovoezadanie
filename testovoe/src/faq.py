@@ -19,7 +19,12 @@ faq_list = [
     {
         'question': 'Как стать успешным?',
         'answer': 'Трудиться.'
-    }
+    },
+    {
+        'question': 'Как включить бота?',
+        'answer': 'start.'
+    },
+
 ]
 
 
@@ -36,7 +41,7 @@ async def faq_inline_query(inline_query: types.InlineQuery):
 
             result = types.InlineQueryResultArticle(
                 id=f"{inline_query.from_user.id}_{faq['question']}",
-                title="",
+                title=faq['question'],
                 input_message_content=types.InputTextMessageContent(message_text=faq['answer'])
             )
             results.append(result)

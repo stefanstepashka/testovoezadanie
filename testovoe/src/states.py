@@ -18,3 +18,7 @@ class CheckoutStates(StatesGroup):
 
 class CatalogState(StatesGroup):
     current_page = State()
+
+
+class QuantityState(StatesGroup):
+    waiting_for_quantity = State()
