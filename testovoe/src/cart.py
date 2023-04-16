@@ -1,4 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from testovoeapi.models import Cart, CartItem, Order
+
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.callback_data import CallbackData
@@ -7,7 +9,7 @@ from main import dp
 from aiogram import Bot, types
 import os
 remove_item_cd = CallbackData("remove_item", "cart_item_id")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testovoe.settings")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testovoe.settings')
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 import django
 django.setup()
@@ -16,12 +18,16 @@ from channels.db import database_sync_to_async
 from aiogram.dispatcher import FSMContext
 from states import QuantityState
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from testovoeapi.models import Cart, CartItem, Order
 
 @database_sync_to_async
 def get_cart_items(user_id):
-    cart = Cart.objects.get(user_id=user_id)
-    cart_items = CartItem.objects.filter(cart=cart)
+
+    try:
+        cart = Cart.objects.get(user_id=user_id)
+        cart_items = CartItem.objects.filter(cart=cart)
+    except Cart.DoesNotExist:
+        cart = Cart.objects.create(user_id=user_id)
+        cart_items = CartItem.objects.filter(cart=cart)
     return cart_items
 
 @database_sync_to_async

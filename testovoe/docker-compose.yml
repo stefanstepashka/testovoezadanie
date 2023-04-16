@@ -1,0 +1,39 @@
+version: '3.11'
+
+services:
+  bot:
+    build: .
+    command:  python src/main.py
+    volumes:
+      - .:/testovoe
+      - ./src:/src
+      - ./testovoe:/testovoeapi
+
+      - ./testovoe:/testovoe
+      - ./testovoeapi:/models
+
+
+  app:
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/testovoe
+      - ./src:/src
+      - ./testovoe:/testovoeapi
+      - ./testovoe:/testovoe
+      - ./testovoeapi:/models
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: testovoe
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres_data:

@@ -19,7 +19,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testovoe.settings")
 import django
 django.setup()
 
-from testovoeapi.models import Cart, CartItem, Product
+
 
 
 category_cd = CallbackData("category", "category_id", "action")
@@ -208,7 +208,9 @@ async def catalog_callback_handler(query: types.CallbackQuery, state: FSMContext
     categories_data = await get_categories()
     categories = categories_data["results"]
     keyboard = InlineKeyboardMarkup()
-
+    if not categories:
+        await query.message.answer("Категории отсутствуют.")
+        return
     for category in categories:
         keyboard.add(InlineKeyboardButton(category["name"],
         callback_data=category_cd.new(category_id=category["id"], action="show_subcategories")))

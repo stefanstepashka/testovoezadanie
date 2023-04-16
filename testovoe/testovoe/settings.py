@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-l7fp3y%9#$a*cgrxp)1xth%3@pw49%(+w_q9%s2u*kmbqfy9&c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['app', '127.0.0.1', 'localhost']
+
 
 
 # Application definition
@@ -75,10 +76,20 @@ WSGI_APPLICATION = 'testovoe.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'testovoe',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': 'db',
+        'PORT': '5432',
     }
 }
 
